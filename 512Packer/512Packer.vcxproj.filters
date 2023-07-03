@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\ZopFli">
+      <UniqueIdentifier>{a1ff2cf1-1635-4c1e-a27d-61e815ae667d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="512Packer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\blocksplitter.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\cache.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\deflate.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\gzip_container.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\hash.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\katajainen.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\lz77.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\squeeze.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\tree.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\util.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\zlib_container.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+    <ClCompile Include="ZopFLI\zopfli_lib.c">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ZopFLI\blocksplitter.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\cache.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\deflate.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\gzip_container.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\hash.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\katajainen.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\lz77.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\squeeze.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\symbols.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\tree.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\util.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\zlib_container.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+    <ClInclude Include="ZopFLI\zopfli.h">
+      <Filter>Source Files\ZopFli</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

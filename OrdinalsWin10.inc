@@ -1,0 +1,20 @@
+; Ordinals dump
+
+ORD_LoadLibraryA       EQU 0x03C6
+ORD_GetTickCount       EQU 0x030D
+ORD_ExitProcess        EQU 0x0163
+ORD_StretchDIBits      EQU 0x03B3
+ORD_ChoosePixelFormat  EQU 0x0029
+ORD_SetPixelFormat     EQU 0x039B
+ORD_SwapBuffers        EQU 0x03B6
+ORD_CreateDecompressor EQU 0x0027
+ORD_Decompress         EQU 0x002A
+ORD_CreateWindowExA    EQU 0x007D
+ORD_GetAsyncKeyState   EQU 0x0127
+ORD_GetDC              EQU 0x0146
+ORD_PeekMessageA       EQU 0x02AC
+ORD_wglCreateContext   EQU 0x0159
+ORD_wglMakeCurrent     EQU 0x0164
+ORD_wglGetProcAddress  EQU 0x0163
+ORD_glRects            EQU 0x00FB
+ORD_glColor3i          EQU 0x001D

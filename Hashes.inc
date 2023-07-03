@@ -1,0 +1,20 @@
+; Hashes dump
+
+HSH_LoadLibraryA       EQU 0x17D2
+HSH_GetTickCount       EQU 0x7088
+HSH_ExitProcess        EQU 0xF80D
+HSH_StretchDIBits      EQU 0x7D76
+HSH_ChoosePixelFormat  EQU 0xA99C
+HSH_SetPixelFormat     EQU 0x3F5B
+HSH_SwapBuffers        EQU 0xA55E
+HSH_CreateDecompressor EQU 0xDDCA
+HSH_Decompress         EQU 0x2BAF
+HSH_CreateWindowExA    EQU 0x0F64
+HSH_GetAsyncKeyState   EQU 0x7FD0
+HSH_GetDC              EQU 0x7871
+HSH_PeekMessageA       EQU 0xAF3D
+HSH_wglCreateContext   EQU 0x56F5
+HSH_wglMakeCurrent     EQU 0xDC91
+HSH_wglGetProcAddress  EQU 0x66FE
+HSH_glRects            EQU 0x21CA
+HSH_glColor3i          EQU 0x42F6
