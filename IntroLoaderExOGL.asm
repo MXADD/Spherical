@@ -7,7 +7,22 @@
 ;
 bits 32
 org  0x10000
+
 %include "SymbolOffsetsOGL.inc"
+
+%if LOAD_BY_ORDINAL
+	%ifdef OWN_ORDINALS_SUPPORT
+		%include "Ordinals.inc"
+	%else
+		%ifdef WIN11_SUPPORT
+			%include "OrdinalsWin11.inc"
+		%else	
+			%include "OrdinalsWin10.inc"
+		%endif	
+	%endif	
+%else
+	%include "Hashes.inc"
+%endif
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -51,28 +66,22 @@ PakInputSizeOff:						; 0x42: MajorOperatingSystemVersion
 PakOutputSizeOff:						; 0x46: MajorImageVersion
     dd PakOutputSize					; 0x48: MinorImageVersion
     dw 0x0004                           ; 0x4A: MajorSubsystemVersion
-    dw 0x0000                           ; 0x4C: MinorSubsystemVersion
+    dw 0x0000                 ; *useme* ; 0x4C: MinorSubsystemVersion
 CompressedPayloadOff:
     dd CompressedPayload				; 0x50: Win32VersionValue
 CabinetFlags:
     dd 0x20000002                       ; 0x54: SizeOfImage --> COMPRESS_ALGORITHM_MSZIP | COMPRESS_RAW 
     dd 0x0000002C                       ; 0x58: SizeOfHeaders
-    dd 0x00000000			  ; *useme* ; 0x5C: CheckSum
+BootStrapC:
+	push	eax							; PakInputSizeOff
+	push	edx							; PakTargetOff
+	jmp     short BootStrapD			; Jump to continuation
+										; 0x5C: CheckSum
+
     dw 0x0002                           ; 0x5E: Subsystem
     dw 0x0000                           ; 0x60: DllCharacteristics
 SymbolsTable:
 %if LOAD_BY_ORDINAL
-
-	%ifdef OWN_ORDINALS_SUPPORT
-		%include "Ordinals.inc"
-	%else
-		%ifdef WIN11_SUPPORT
-			%include "OrdinalsWin11.inc"
-		%else	
-			%include "OrdinalsWin10.inc"
-		%endif	
-	%endif	
-	
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;
 	; By ordinal
@@ -122,8 +131,6 @@ SymbolsTable:
 	;
 	; By hash
 	;
-	%include "Hashes.inc"
-	
 	dw  HSH_LoadLibraryA				; kernel32::LoadLibraryA hash
 	dw  0x0346 							; kernel32::Fake!!! hash (we need something small)
 										; 0x64: SizeOfStackReserve
@@ -170,13 +177,11 @@ SymbolsTable:
 SymbolsTableEnd:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-BootStrapC:
+BootStrapD:
 
 	;
-	; Push arguments for Decompress (continues from BootStrapB)
+	; Push arguments for Decompress (continues from BootStrapB & BootStrapC)
 	;
-	push	eax							; PakInputSizeOff
-	push	edx							; PakTargetOff
 	lodsd
 	push	eax							; PakOutputSizeOff
 	lodsd								; Gap in params ...
