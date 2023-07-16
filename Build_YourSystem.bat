@@ -12,7 +12,7 @@ rem Export current ordinals
 call SymDump.exe --ordinals
 
 rem Compile final intro
-nasm.exe -f bin IntroLoaderExOGL.asm -o add512_byOrdinalOwnSys.exe -s -O9 -DNO_PEEK_MSG=1 -DOWN_ORDINALS_SUPPORT -DLOAD_BY_ORDINAL=1
+nasm.exe -f bin IntroLoaderExOGLbyOrdinal.asm -o add512_byOrdinalOwnSys.exe -s -O9 -DNO_PEEK_MSG=1 -DOWN_ORDINALS_SUPPORT -DLOAD_BY_ORDINAL=1
 IF ERRORLEVEL 1 GOTO BUILDFAIL
 
 rem Dump PE for debugging

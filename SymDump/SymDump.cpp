@@ -202,7 +202,7 @@ void *FindFunctionByHash16(const char *FName, DWORD ModulePtr, WORD InHash)
 	return NULL;
 }
 
-DWORD GetFunctionOrdinal(const char *Name, HMODULE _ModulePtr)
+DWORD GetFunctionOrdinal(const char *Name, HMODULE _ModulePtr, bool ReverseBytes)
 {
 	DWORD ModulePtr((DWORD)_ModulePtr);
 
@@ -212,7 +212,17 @@ DWORD GetFunctionOrdinal(const char *Name, HMODULE _ModulePtr)
 	while (--numImp >= 0)
 	{
 		if (strcmp(Name, ((char*) (*(long*)(*(long*)(tmp + 0x20) + ModulePtr + numImp * 4) + ModulePtr))) == 0)
-			return *(WORD*) (*(long*)((tmp + 0x24)) + ModulePtr + numImp * 2);
+		{
+			WORD Ordinal = *(WORD*) (*(long*)((tmp + 0x24)) + ModulePtr + numImp * 2);
+			if (ReverseBytes)
+			{
+				const WORD PartA = (Ordinal >> 0) & 0xFF;
+				const WORD PartB = (Ordinal >> 8) & 0xFF;
+
+				Ordinal = (PartA << 8) | PartB;
+			}
+			return Ordinal;
+		}
 	}
 
 	return 0xFFFF;
@@ -373,11 +383,18 @@ int main(int argc, char *argv[])
 	HMODULE opengl32 = ::LoadLibraryA("opengl32");
 	HMODULE cabinet  = ::LoadLibraryA("cabinet");
 
-	bool ExportOrdinals = false;
-	bool ExportHashes  = false;
+	bool ExportOrdinals    = false;
+	bool ExportOrdinalsRev = false;
+	bool ExportHashes	   = false;
 
 	if (argc == 1 || _stricmp(argv[1], "--ordinals") == 0)
 		ExportOrdinals = true;
+
+	if (argc == 1 || _stricmp(argv[1], "--ordinalsrev") == 0)
+	{
+		ExportOrdinals	  = true;
+		ExportOrdinalsRev = true;
+	}
 
 	if (argc == 1 || _stricmp(argv[1], "--hashes") == 0)
 		ExportHashes = true;
@@ -443,24 +460,24 @@ int main(int argc, char *argv[])
 		{
 			fprintf(f, "; Ordinals dump\n\n");
 
-			fprintf(f, "ORD_LoadLibraryA       EQU 0x%04X\n", GetFunctionOrdinal("LoadLibraryA", kernel32));
-			fprintf(f, "ORD_GetTickCount       EQU 0x%04X\n", GetFunctionOrdinal("GetTickCount", kernel32));
-			fprintf(f, "ORD_ExitProcess        EQU 0x%04X\n", GetFunctionOrdinal("ExitProcess", kernel32));
-			fprintf(f, "ORD_StretchDIBits      EQU 0x%04X\n", GetFunctionOrdinal("StretchDIBits", gdi32));
-			fprintf(f, "ORD_ChoosePixelFormat  EQU 0x%04X\n", GetFunctionOrdinal("ChoosePixelFormat", gdi32));
-			fprintf(f, "ORD_SetPixelFormat     EQU 0x%04X\n", GetFunctionOrdinal("SetPixelFormat", gdi32));
-			fprintf(f, "ORD_SwapBuffers        EQU 0x%04X\n", GetFunctionOrdinal("SwapBuffers", gdi32));
-			fprintf(f, "ORD_CreateDecompressor EQU 0x%04X\n", GetFunctionOrdinal("CreateDecompressor", cabinet));
-			fprintf(f, "ORD_Decompress         EQU 0x%04X\n", GetFunctionOrdinal("Decompress", cabinet));
-			fprintf(f, "ORD_CreateWindowExA    EQU 0x%04X\n", GetFunctionOrdinal("CreateWindowExA", user32));
-			fprintf(f, "ORD_GetAsyncKeyState   EQU 0x%04X\n", GetFunctionOrdinal("GetAsyncKeyState", user32));
-			fprintf(f, "ORD_GetDC              EQU 0x%04X\n", GetFunctionOrdinal("GetDC", user32));
-			fprintf(f, "ORD_PeekMessageA       EQU 0x%04X\n", GetFunctionOrdinal("PeekMessageA", user32));
-			fprintf(f, "ORD_wglCreateContext   EQU 0x%04X\n", GetFunctionOrdinal("wglCreateContext", opengl32));
-			fprintf(f, "ORD_wglMakeCurrent     EQU 0x%04X\n", GetFunctionOrdinal("wglMakeCurrent", opengl32));
-			fprintf(f, "ORD_wglGetProcAddress  EQU 0x%04X\n", GetFunctionOrdinal("wglGetProcAddress", opengl32));
-			fprintf(f, "ORD_glRects            EQU 0x%04X\n", GetFunctionOrdinal("glRects", opengl32));
-			fprintf(f, "ORD_glColor3i          EQU 0x%04X\n", GetFunctionOrdinal("glColor3i", opengl32));
+			fprintf(f, "ORD_LoadLibraryA       EQU 0x%04X\n", GetFunctionOrdinal("LoadLibraryA", kernel32, false));
+			fprintf(f, "ORD_GetTickCount       EQU 0x%04X\n", GetFunctionOrdinal("GetTickCount", kernel32, ExportOrdinalsRev));
+			fprintf(f, "ORD_ExitProcess        EQU 0x%04X\n", GetFunctionOrdinal("ExitProcess", kernel32, ExportOrdinalsRev));
+			fprintf(f, "ORD_StretchDIBits      EQU 0x%04X\n", GetFunctionOrdinal("StretchDIBits", gdi32, ExportOrdinalsRev));
+			fprintf(f, "ORD_ChoosePixelFormat  EQU 0x%04X\n", GetFunctionOrdinal("ChoosePixelFormat", gdi32, ExportOrdinalsRev));
+			fprintf(f, "ORD_SetPixelFormat     EQU 0x%04X\n", GetFunctionOrdinal("SetPixelFormat", gdi32, ExportOrdinalsRev));
+			fprintf(f, "ORD_SwapBuffers        EQU 0x%04X\n", GetFunctionOrdinal("SwapBuffers", gdi32, ExportOrdinalsRev));
+			fprintf(f, "ORD_CreateDecompressor EQU 0x%04X\n", GetFunctionOrdinal("CreateDecompressor", cabinet, ExportOrdinalsRev));
+			fprintf(f, "ORD_Decompress         EQU 0x%04X\n", GetFunctionOrdinal("Decompress", cabinet, ExportOrdinalsRev));
+			fprintf(f, "ORD_CreateWindowExA    EQU 0x%04X\n", GetFunctionOrdinal("CreateWindowExA", user32, ExportOrdinalsRev));
+			fprintf(f, "ORD_GetAsyncKeyState   EQU 0x%04X\n", GetFunctionOrdinal("GetAsyncKeyState", user32, ExportOrdinalsRev));
+			fprintf(f, "ORD_GetDC              EQU 0x%04X\n", GetFunctionOrdinal("GetDC", user32, ExportOrdinalsRev));
+			fprintf(f, "ORD_PeekMessageA       EQU 0x%04X\n", GetFunctionOrdinal("PeekMessageA", user32, ExportOrdinalsRev));
+			fprintf(f, "ORD_wglCreateContext   EQU 0x%04X\n", GetFunctionOrdinal("wglCreateContext", opengl32, ExportOrdinalsRev));
+			fprintf(f, "ORD_wglMakeCurrent     EQU 0x%04X\n", GetFunctionOrdinal("wglMakeCurrent", opengl32, ExportOrdinalsRev));
+			fprintf(f, "ORD_wglGetProcAddress  EQU 0x%04X\n", GetFunctionOrdinal("wglGetProcAddress", opengl32, ExportOrdinalsRev));
+			fprintf(f, "ORD_glRects            EQU 0x%04X\n", GetFunctionOrdinal("glRects", opengl32, ExportOrdinalsRev));
+			fprintf(f, "ORD_glColor3i          EQU 0x%04X\n", GetFunctionOrdinal("glColor3i", opengl32, ExportOrdinalsRev));
 
 			fclose(f);
 		}

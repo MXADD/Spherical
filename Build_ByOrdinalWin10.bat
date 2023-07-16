@@ -9,7 +9,7 @@ rem Compress body into header
 IF ERRORLEVEL 1 GOTO BUILDFAIL
 
 rem Compile final intro (win10)
-nasm.exe -f bin IntroLoaderExOGL.asm -o add512_byOrdinalWin10.exe -s -O9 -DNO_PEEK_MSG=1 -DLOAD_BY_ORDINAL=1
+nasm.exe -f bin IntroLoaderExOGLbyOrdinal.asm -o add512_byOrdinalWin10.exe -s -O9 -DNO_PEEK_MSG=1 -DLOAD_BY_ORDINAL=1
 IF ERRORLEVEL 1 GOTO BUILDFAIL
 
 rem Dump PE for debugging (win10)

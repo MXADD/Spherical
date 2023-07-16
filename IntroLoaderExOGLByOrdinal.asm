@@ -10,19 +10,15 @@ org  0x10000
 
 %include "SymbolOffsetsOGL.inc"
 
-%if LOAD_BY_ORDINAL
-	%ifdef OWN_ORDINALS_SUPPORT
-		%include "Ordinals.inc"
-	%else
-		%ifdef WIN11_SUPPORT
-			%include "OrdinalsWin11.inc"
-		%else	
-			%include "OrdinalsWin10.inc"
-		%endif	
-	%endif	
+%ifdef OWN_ORDINALS_SUPPORT
+	%include "Ordinals.inc"
 %else
-	%include "Hashes.inc"
-%endif
+	%ifdef WIN11_SUPPORT
+		%include "OrdinalsWin11.inc"
+	%else	
+		%include "OrdinalsWin10.inc"
+	%endif	
+%endif	
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -80,12 +76,9 @@ BootStrapC:
 
     dw 0x0002                           ; 0x5E: Subsystem
     dw 0x0000                           ; 0x60: DllCharacteristics
+
 SymbolsTable:
-%if LOAD_BY_ORDINAL
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;
-	; By ordinal
-	;
+
 	dw  ORD_LoadLibraryA				; kernel32::LoadLibraryA ordinal
 	dw  ORD_ExitProcess					; kernel32::ExitProcess ordinal
 										; 0x64: SizeOfStackReserve
@@ -125,56 +118,7 @@ SymbolsTable:
 %if NO_PEEK_MSG == 0
 	dw  ORD_PeekMessageA				; user32::PeekMessageA ordinal
 %endif
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-%else
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;
-	; By hash
-	;
-	dw  HSH_LoadLibraryA				; kernel32::LoadLibraryA hash
-	dw  0x0346 							; kernel32::Fake!!! hash (we need something small)
-										; 0x64: SizeOfStackReserve
 
-	dw  HSH_ExitProcess					; kernel32::ExitProcess hash
-	dw  0x01AB							; kernel32::Fake!!! hash (we need something small)
-										; 0x68: SizeOfStackCommit
-
-	dw  HSH_GetTickCount				; kernel32::GetTickCount hash
-	dw  0x01AB 							; kernel32::Fake!!! hash (we need something small)
-										; 0x6C: SizeOfHeapReserve
-
-	db  "gdi32", 0
-	dw  HSH_SwapBuffers					; gdi32::SwapBuffers hash
-										; 0x70: SizeOfHeapCommit
-										; 0x74: LoaderFlags
-
-	dw  0x0000							; gdi32:::Fake!!! hash (we need 0 here)
-	dw  0x0000							; gdi32:::Fake!!! hash (we need 0 here)
-										; 0x78: NumberOfRvaAndSizes
-										
-	dw  HSH_ChoosePixelFormat			; gdi32::ChoosePixelFormat hash
-	dw  HSH_SetPixelFormat				; gdi32::SetPixelFormat hash
-
-	db  "cabinet", 0						
-	dw  HSH_CreateDecompressor			; cabinet::CreateDecompressor hash
-	dw  HSH_Decompress					; cabinet::Decompress hash
-
-	db  "opengl32", 0
-	dw  HSH_glRects						; opengl32::glRects hash
-	dw  HSH_glColor3i					; opengl32::glColor3i hash
-	dw  HSH_wglCreateContext			; opengl32::wglCreateContext hash
-	dw  HSH_wglMakeCurrent				; opengl32::wglMakeCurrent hash
-	dw  HSH_wglGetProcAddress			; opengl32::wglGetProcAddress hash
-
-	db  "user32", 0				
-	dw  HSH_CreateWindowExA				; user32::CreateWindowExA hash
-	dw  HSH_GetAsyncKeyState			; user32::GetAsyncKeyState hash
-	dw  HSH_GetDC						; user32::GetDC hash
-%if NO_PEEK_MSG == 0
-	dw  HSH_PeekMessageA				; user32::PeekMessageA hash
-%endif
-%endif
-SymbolsTableEnd:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 BootStrapD:
@@ -201,7 +145,6 @@ BootStrapD:
 	;
 	mov     esi, [ecx -0x08 + 0x18]		; Kernel32 DllBase
 
-%if LOAD_BY_ORDINAL
     ;
     ; Load by Ordinal from symbols table
     ;
@@ -250,114 +193,6 @@ LoaderOrdinals:
 	jne		LoaderMain
 
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-%else
-    ;
-    ; Load by Hash from symbols table
-    ;
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;
-	; ebp - Start of symbols table (output)
-	; esi - Kernel32 DllBase
-	; edi - Start of symbols table (input)
-	; eax - non-zero & rather big (> 0xFFFF)
-	; ebx - 0
-	; ecx - non-zero & rather big (> 0xFFFF)
-	; edx - ?
-	;
-
-	jmp		LoaderHashes
-
-LoaderMain:
-
-	inc		edi
-	inc		edi
-	push	edi							; Push DLL name
-	call	[ebp]						; Call LoadLibraryA
-	test    eax, eax
-	jz      LoaderHashes
-	mov		esi, eax					; al must be 0 after this (all modules addreses have lower word 0)
-										; esi == ModulePtr
-	repne   scasb						; Move to the end of string
-
-LoaderHashes:
-
-	pushad
-
-	mov		ecx, [edi]					; HashToSearchFor (we need only lower part, we assume that (e)cx will contain non-zero hash when loading new DLL, and ecx >= strlen(DLLName)+1 !)
-
-	mov		edi, [esi + 0x3C]
-	mov     edi, [esi + edi + 0x78]
-	add		edi, esi					; uint32 tmp = *(uint32*)(*(uint32*)(ModulePtr + 0x3C) + ModulePtr + 0x78) + ModulePtr;
-	mov     eax, [edi + 0x18]			; uint32 NumberOfImports = *(uint32*)(tmp + 0x18);
-
-										; stack: edi
-ImportsScan:
-
-	; esi == ModulePtr
-	; edi == ImportsTable / Temp
-	; ebp == EndOfTable
-	; ebx == Resolver ptr
-	; ecx == Hash of function
-	; edx == free
-	; eax == NumberOfImports
-
-	dec		eax
-	js		OutputJunk					; Symbol not found (eax is negative after dec)
-
-	push	eax
-	push	esi
-										; stack: edi, eax, esi
-
-	lea		eax, [esi + (eax * 4)]
-	add		eax, [edi + 0x20]
-	add		esi, [eax]					; const char *Export = *(uint32*)(*(uint32*)(tmp + 0x20) + ModulePtr + (NumberOfImports * 4) - 4) + ModulePtr;
-										; esi - Function name
-
-	; esi == Function name string, Make hash of it in dx
-
-	xor		edx, edx
-
-CrcLoop:
-	lodsb
-	imul	edx, 83
-	xor     dl, al
-	test	al, al
-	jnz		CrcLoop
-										; dx - Hash of function name
-										; cx - Hash of what we are searchin' for 
-	pop		esi
-	pop		eax
-
-	; cx = Hash to find, dx - our hash, Compare hashes
-
-	cmp		cx, dx
-	jne		ImportsScan
-
-	; eax == ImportIndex, Get Ordinal
-
-	lea     eax, [esi + (eax * 2)]
-	add		eax, [edi + 0x24]		
-	movzx   eax, word [eax]				; uint16 Ordinal = *(uint16*)(*(uint32*)((tmp + 0x24)) + ModulePtr + (NumberOfImports * 2) - 2);
-
-	; eax == Ordinal, Get function address
-
-	lea		eax, [esi + eax * 4] 
-	add		eax, [edi + 0x1C]
-	add		esi, [eax]					; void FunctionAddress = *(long*)(*(long*)(tmp + 0x1C) + ModulePtr + 4 * DWORD(Ordinal)) + ModulePtr;
-
-OutputJunk:								; Used for fake hashes
-
-	; esi == FunctionAddress, Output to symbols table
-
-	mov		[ebp+ebx*4], esi
-	popad
-
-	inc		ebx
-	cmp		ebx, NUM_Symbols			; Check if we are done with all the exports
-	jne		LoaderMain
-
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-%endif
 
 	; CreateDecompressor(0x20000002, 0, &HDecompressor)
 

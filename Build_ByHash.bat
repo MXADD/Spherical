@@ -9,7 +9,7 @@ rem Compress body into header
 IF ERRORLEVEL 1 GOTO BUILDFAIL
 
 rem Compile final intro
-nasm.exe -f bin IntroLoaderExOGL.asm -o add512_byHash.exe -s -O9 -DNO_PEEK_MSG=1 -DLOAD_BY_ORDINAL=0
+nasm.exe -f bin IntroLoaderExOGLbyHash.asm -o add512_byHash.exe -s -O9 -DNO_PEEK_MSG=1 -DLOAD_BY_ORDINAL=0
 IF ERRORLEVEL 1 GOTO BUILDFAIL
 
 rem Dump PE (win10)
