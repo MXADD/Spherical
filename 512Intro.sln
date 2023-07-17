@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33529.622
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "512Intro", "512Intro.vcxproj", "{7D1F85C1-F0EF-4583-83DE-636478113C1D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		ByHash|x86 = ByHash|x86
+		Win10ByOrdinal|x86 = Win10ByOrdinal|x86
+		Win11ByOrdinal|x86 = Win11ByOrdinal|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D1F85C1-F0EF-4583-83DE-636478113C1D}.ByHash|x86.ActiveCfg = ByHash|Win32
+		{7D1F85C1-F0EF-4583-83DE-636478113C1D}.ByHash|x86.Build.0 = ByHash|Win32
+		{7D1F85C1-F0EF-4583-83DE-636478113C1D}.Win10ByOrdinal|x86.ActiveCfg = Win10ByOrdinal|Win32
+		{7D1F85C1-F0EF-4583-83DE-636478113C1D}.Win10ByOrdinal|x86.Build.0 = Win10ByOrdinal|Win32
+		{7D1F85C1-F0EF-4583-83DE-636478113C1D}.Win11ByOrdinal|x86.ActiveCfg = Win11ByOrdinal|Win32
+		{7D1F85C1-F0EF-4583-83DE-636478113C1D}.Win11ByOrdinal|x86.Build.0 = Win11ByOrdinal|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D426D7BB-D6D5-45AE-8E72-2F2B7D8228D8}
+	EndGlobalSection
+EndGlobal
